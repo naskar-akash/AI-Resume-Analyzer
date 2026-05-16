@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>History</h2>
+    {% if history %}
+        <ul>
+            {% for item in reports %}
+                <div class="card">
+                    <p><strong>Resume Preview: </strong></p>
+                    <p>{{ item.resume[:150] }}...</p>
+                <hr>
+                    <li>
+                    <strong>{{ item.timestamp }}</strong><br>
+                    Role: {{ item.role }}<br>
+                    Skills: {{ item.skills|join(', ') }}<br>
+                    Missing Skills: {{ item.missing_skills|join(', ') }}<br>
+                    Roadmap: {{ item.roadmap|join(', ') }}<br>
+                    Interview Questions: {{ item.interview_questions|join(', ') }}
+                </li>
+                </div>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No history available.</p>
+    {% endif %}
+    
+{% endblock content %}
