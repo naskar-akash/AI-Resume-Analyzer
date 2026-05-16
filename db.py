@@ -1,16 +1,15 @@
+from dotenv import load_dotenv
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base,sessionmaker
 
-DATABASE_URL = "mysql+mysqldb://2HDADT4HueAa3wS.root:<PASSWORD>@gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com:4000/test?ssl_mode=VERIFY_IDENTITY&ssl_ca=<CA_PATH>"
+load_dotenv()
+
+DATABASE_URL = os.getenv("CONNECTION_URL")
 
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,
-    connect_args={
-        "ssl":{
-            "ssl":True
-        }
-    }
+    pool_pre_ping=True,   # Check if the connection is alive before using it
 )
 
 SessionLocal = sessionmaker(bind=engine)
