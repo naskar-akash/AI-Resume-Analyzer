@@ -1,7 +1,6 @@
 from unittest import result
-
 from flask import Flask, render_template, request, redirect, session
-from db import base, engine, SessionLocal
+from db import SessionLocal, init_db
 import models
 import PyPDF2
 import json
@@ -15,7 +14,7 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 
-base.metadata.create_all(bind=engine)   # Create tables in the database
+init_db()   # Create tables and migrate any missing schema changes
 
 # Home page
 @app.route('/')
