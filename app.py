@@ -1,3 +1,5 @@
+from unittest import result
+
 from flask import Flask, render_template, request, redirect, session
 from db import base, engine, SessionLocal
 import models
@@ -6,6 +8,7 @@ import json
 import docx
 import os
 from dotenv import load_dotenv
+from ai import analyse_resume
 
 
 load_dotenv()
@@ -90,7 +93,50 @@ def dashboard():
         if resume_text and user_goal:
             try:
                 result =analyse_resume(resume_text, user_goal)
+                # Save to db
+                db = SessionLocal()
+                user = db.query(models.User).filter_by(email=session['user']).first()
+                
+                report = models.Reports(
+                    user_id=user.id,
+                    resume_text=resume_text,
+                    results = json.dumps(result)   
+                )
+                db.add(report)
+                db.commit()
+            except Exception as e:
+                result = {"error": f"AI analysis error: {str(e)}"}
+    return render_template('dashboard.html', user = session['user'], result=result)
+    
+# history page
+@app.route("/history")
+def history():
+    if 'user' not in session:
+        return redirect("/login")
+    db = SessionLocal()
+    user = db.query(models.User).filter_by(email=session['user']).first()
+    reports = db.query(models.Reports).filter_by(user_id=user.id).all()
 
+    # connvert results from string to dict
+    parsed_reports = []
+    for r in reports:
+        try:
+            parsed_result = json.loads(r.results)
+        except:
+            parsed_result = []
+            
+        parsed_reports.append({
+            "id": r.id,
+            "resume": r.resume_text,
+            "results": parsed_result
+        })
+    return render_template('history.html', reports=parsed_reports)
+
+# Logout route
+@app.route("/logout")
+def logout():
+    session.pop('user', None)
+    return redirect('/login')
 
 if __name__ == '__main__':
     app.run(debug=True)
